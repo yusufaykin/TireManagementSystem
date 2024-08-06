@@ -1,70 +1,101 @@
-# Getting Started with Create React App
+# Tire Management System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+The Tire Management System is a comprehensive React application specifically designed for auto tire shops and large tire warehouses. This system has been developed to optimize tire inventory management, sales tracking, and customer services.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+### 1. Inventory Management
+- Add new tires (brand, size, year, season, purchase price, photo)
+- View and filter existing inventory
+- Update and delete inventory
+- Generate QR codes
 
-### `npm start`
+### 2. Sales Operations
+- Quick and easy sales recording
+- Sales history table
+- Download sales report in Excel format
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 3. Tire Tracking System
+- View detailed tire information
+- Filtering and search capabilities
+- Share tire information with customers
+- Download inventory report in Excel format
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 4. Dashboard
+- Total number of tires
+- Total inventory value
+- Total sales value
+- Total profit analysis
 
-### `npm test`
+### 5. Tire Hotel
+- Track storage of customer tires
+- Update tire delivery status
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Upcoming Features
 
-### `npm run build`
+- Direct listing for sale feature
+- B2B (Business-to-Business) system
+- Virtual POS integration
+- E-Invoice system
+- Mobile application support
+- Advanced reporting tools
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Technologies and Libraries
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- React 18.3.1
+- Material-UI 5.16.6
+- React Router 6.26.0
+- i18next 23.12.2 (Multi-language support)
+- xlsx 0.18.5 (Excel operations)
+- qrcode.react 3.1.0 (QR code generation)
+- html2canvas 1.4.1 (Screenshot capture)
+- date-fns 3.6.0 (Date operations)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Screenshots
 
-### `npm run eject`
+![Dashboard](/public/images/dashboarf.png)
+![Adding Tires](/public/images/adding-tires.png)
+![Tire Sales](/public/images/tire-sales.png)
+![Sales History](/public/images/sales-history.png)
+![Tire Tracking System](/public/images/tire-tracking-system.png)
+![Tire Detail](/public/images/tire-detail.png)
+![Tire Hotel](/public/images/tirehotel.png)
+![TH Tire Adding](/public/images/tirehotel-tireadding.png)
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Requirements
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+- Web browser (Google Chrome, Mozilla Firefox, etc.)
+- Node.js
+- npm (Node Package Manager)
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Installation
 
-## Learn More
+To run this project locally, follow these steps:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+1. Clone this repo: `git clone https://github.com/yusufaykin/TireManagementSystem.git`
+2. Navigate to the project folder: `cd TireManagementSystem`
+3. Install the necessary dependencies: `npm install`
+4. Start the project: `npm run start`
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Contributing
 
-### Code Splitting
+We welcome contributions of any kind! If you'd like to contribute to the project, please follow these steps:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+1. Fork this repo: `https://github.com/yusufaykin/TireManagementSystem/fork`
+2. Create a new branch: `git checkout -b new-feature`
+3. Make your changes and commit them: `git commit -am 'Add new feature'`
+4. Push your branch: `git push origin new-feature`
+5. Submit a Pull Request
 
-### Analyzing the Bundle Size
+## License
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+This project is licensed under the [MIT License](LICENSE).
 
-### Making a Progressive Web App
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Tire Management System is developed by Yusuf Aykın. All rights reserved.
 
-### Advanced Configuration
+## Contact
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+If you have any questions or suggestions, please feel free to contact me via email: [aykinyusuf1@gmail.com]
