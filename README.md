@@ -92,10 +92,11 @@ We welcome contributions of any kind! If you'd like to contribute to the project
 
 This project is licensed under the [MIT License](LICENSE).
 
----
-
-Tire Management System is developed by Yusuf Aykın. All rights reserved.
 
 ## Contact
 
 If you have any questions or suggestions, please feel free to contact me via email: [aykinyusuf1@gmail.com]
+
+---
+
+Tire Management System is developed by Yusuf Aykın. All rights reserved.
