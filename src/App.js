@@ -280,7 +280,7 @@ const App = () => {
   };
 
   const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, component: 'Dashboard' },
+    { text: 'Gösterge Paneli', icon: <DashboardIcon />, component: 'Dashboard' },
     { text: 'Lastik Ekle', icon: <AddCircleIcon />, component: 'TireForm' },
     { text: 'Lastik Sat', icon: <SellIcon />, component: 'SaleForm' },
     { text: 'Lastik Oteli', icon: <HotelIcon />, component: 'TireHotel' },
@@ -288,6 +288,7 @@ const App = () => {
     { text: 'Analitik', icon: <AnalyticsIcon />, component: 'Analytics' },
     { text: 'Envanter', icon: <InventoryIcon />, component: 'Inventory' },
     { text: 'Teslimatlar', icon: <LocalShippingIcon />, component: 'Deliveries' },
+    { text: 'Ayarlar', icon: <LocalShippingIcon />, component: 'Settings' },
   ];
 
   const drawer = (

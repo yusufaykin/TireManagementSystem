@@ -314,133 +314,133 @@ function TireHotel() {
   };
 
   return (
-    <ThemeProvider theme={theme}>
-      <Box sx={{ maxWidth: 1200, margin: 'auto', padding: 3 }}>
-        <Paper elevation={3} sx={{ padding: 3, marginBottom: 3 }}>
-          <Typography variant="h4" gutterBottom color="primary" sx={{ marginBottom: 3 }}>
-            Lastik Oteli Yönetim Sistemi
-          </Typography>
-          <Grid container spacing={3} alignItems="center">
-            <Grid item xs={12} sm={6} md={4}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => setIsDialogOpen(true)}
-                startIcon={<PhotoCamera />}
-                fullWidth
-              >
-                Yeni Lastik Ekle
-              </Button>
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <TextField
-                fullWidth
-                label="Ara"
-                variant="outlined"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={showExpiredOnly}
-                    onChange={(e) => setShowExpiredOnly(e.target.checked)}
-                    color="primary"
-                  />
-                }
-                label="Sadece Süresi Geçenleri Göster"
-              />
-            </Grid>
-          </Grid>
-        </Paper>
-  
-        <Paper elevation={3} sx={{ height: 600, width: '100%', marginBottom: 3 }}>
-          <DataGrid
-            rows={filteredTires}
-            columns={columns}
-            pageSize={10}
-            rowsPerPageOptions={[5, 10, 20]}
-            checkboxSelection
-            disableSelectionOnClick
-            components={{
-              Toolbar: GridToolbar,
-            }}
-          />
-        </Paper>
-  
-        <Dialog open={isDialogOpen} onClose={resetForm} maxWidth="md" fullWidth>
-          <DialogTitle>{editingTire ? 'Lastik Düzenle' : 'Yeni Lastik Ekle'}</DialogTitle>
-          <DialogContent>
-            <form onSubmit={handleSubmit}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <TextField fullWidth name="customerName" label="Müşteri Adı" value={newTire.customerName} onChange={handleChange} required />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField fullWidth name="plateNumber" label="Plaka" value={newTire.plateNumber} onChange={handleChange} required />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField fullWidth name="vehicleModel" label="Araç Modeli" value={newTire.vehicleModel} onChange={handleChange} required />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField fullWidth name="brand" label="Marka" value={newTire.brand} onChange={handleChange} required />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField fullWidth name="size" label="Ebat" value={newTire.size} onChange={handleChange} required />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField fullWidth name="quantity" label="Adet" type="number" value={newTire.quantity} onChange={handleChange} required />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField fullWidth name="storageDate" label="Depolama Tarihi" type="date" InputLabelProps={{ shrink: true }} value={newTire.storageDate} onChange={handleChange} required />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField fullWidth name="retrievalDate" label="Tahmini Alınma Tarihi" type="date" InputLabelProps={{ shrink: true }} value={newTire.retrievalDate} onChange={handleChange} />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField fullWidth name="notes" label="Notlar" multiline rows={4} value={newTire.notes} onChange={handleChange} />
-                </Grid>
-                <Grid item xs={12}>
-                  <input
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    id="raised-button-file"
-                    type="file"
-                    onChange={handlePhotoChange}
-                  />
-                  <label htmlFor="raised-button-file">
-                    <Button variant="contained" component="span" startIcon={<PhotoCamera />}>
-                      Fotoğraf Yükle
-                    </Button>
-                  </label>
-                  {newTire.photo && (
-                    <img src={newTire.photo} alt="Lastik fotoğrafı" style={{ width: '100%', marginTop: '10px' }} />
-                  )}
-                </Grid>
-              </Grid>
-            </form>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={resetForm}>İptal</Button>
-            <Button onClick={handleSubmit} color="primary" variant="contained">
-              {editingTire ? 'Güncelle' : 'Ekle'}
+  <ThemeProvider theme={theme}>
+    <Box sx={{ maxWidth: 1200, margin: 'auto', padding: 3 }}>
+      <Paper elevation={3} sx={{ padding: 3, marginBottom: 3 }}>
+        <Typography variant="h4" gutterBottom color="primary" sx={{ marginBottom: 3 }}>
+          Lastik Oteli Yönetim Sistemi
+        </Typography>
+        <Grid container spacing={3} alignItems="center">
+          <Grid item xs={12} sm={6} md={4}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setIsDialogOpen(true)}
+              startIcon={<PhotoCamera />}
+              fullWidth
+            >
+              Yeni Lastik Ekle
             </Button>
-          </DialogActions>
-        </Dialog>
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={6000}
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-        >
-          <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity}>
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
-      </Box>
-    </ThemeProvider>
-  );
+          </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <TextField
+              fullWidth
+              label="Ara"
+              variant="outlined"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={showExpiredOnly}
+                  onChange={(e) => setShowExpiredOnly(e.target.checked)}
+                  color="primary"
+                />
+              }
+              label="Sadece Süresi Geçenleri Göster"
+            />
+          </Grid>
+        </Grid>
+      </Paper>
+
+      <Paper elevation={3} sx={{ height: 600, width: '100%', marginBottom: 3 }}>
+        <DataGrid
+          rows={filteredTires}
+          columns={columns}
+          pageSize={10}
+          rowsPerPageOptions={[5, 10, 20]}
+          checkboxSelection
+          disableSelectionOnClick
+          components={{
+            Toolbar: GridToolbar,
+          }}
+        />
+      </Paper>
+
+      <Dialog open={isDialogOpen} onClose={resetForm} maxWidth="md" fullWidth>
+        <DialogTitle>{editingTire ? 'Lastik Düzenle' : 'Yeni Lastik Ekle'}</DialogTitle>
+        <DialogContent>
+          <form onSubmit={handleSubmit}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField fullWidth name="customerName" label="Müşteri Adı" value={newTire.customerName} onChange={handleChange} required />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField fullWidth name="plateNumber" label="Plaka" value={newTire.plateNumber} onChange={handleChange} required />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField fullWidth name="vehicleModel" label="Araç Modeli" value={newTire.vehicleModel} onChange={handleChange} required />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField fullWidth name="brand" label="Marka" value={newTire.brand} onChange={handleChange} required />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField fullWidth name="size" label="Ebat" value={newTire.size} onChange={handleChange} required />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField fullWidth name="quantity" label="Adet" type="number" value={newTire.quantity} onChange={handleChange} required />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField fullWidth name="storageDate" label="Depolama Tarihi" type="date" InputLabelProps={{ shrink: true }} value={newTire.storageDate} onChange={handleChange} required />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField fullWidth name="retrievalDate" label="Tahmini Alınma Tarihi" type="date" InputLabelProps={{ shrink: true }} value={newTire.retrievalDate} onChange={handleChange} />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField fullWidth name="notes" label="Notlar" multiline rows={4} value={newTire.notes} onChange={handleChange} />
+              </Grid>
+              <Grid item xs={12}>
+                <input
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  id="raised-button-file"
+                  type="file"
+                  onChange={handlePhotoChange}
+                />
+                <label htmlFor="raised-button-file">
+                  <Button variant="contained" component="span" startIcon={<PhotoCamera />}>
+                    Fotoğraf Yükle
+                  </Button>
+                </label>
+                {newTire.photo && (
+                  <img src={newTire.photo} alt="Lastik fotoğrafı" style={{ width: '100%', marginTop: '10px' }} />
+                )}
+              </Grid>
+            </Grid>
+          </form>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={resetForm}>İptal</Button>
+          <Button onClick={handleSubmit} color="primary" variant="contained">
+            {editingTire ? 'Güncelle' : 'Ekle'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      >
+        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </Box>
+  </ThemeProvider>
+);
 }
 
 export default TireHotel;
