@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   TextField, Button, Grid, Paper, Typography, Box, IconButton, Dialog, DialogTitle, DialogContent, DialogActions,
-  Snackbar, Alert, Chip, Tooltip, FormControlLabel, Switch, ThemeProvider, createTheme
+  Snackbar, Alert, Chip, Tooltip, FormControlLabel, Switch, ThemeProvider, createTheme, Tabs, Tab
 } from '@mui/material';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -9,34 +9,55 @@ import EditIcon from '@mui/icons-material/Edit';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import PrintIcon from '@mui/icons-material/Print';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import { jsPDF } from "jspdf";
+import 'jspdf-autotable';
 
 const theme = createTheme({
   palette: {
-    primary: { main: '#0056b3' },
-    secondary: { main: '#6c757d' },
+    primary: { main: '#1976d2' },
+    secondary: { main: '#dc004e' },
+    background: { default: '#f5f5f5' },
   },
-  typography: { fontFamily: 'Arial, sans-serif' },
+  typography: { fontFamily: 'Roboto, Arial, sans-serif' },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          borderRadius: 12,
+        },
+      },
+    },
+  },
 });
 
 function TireHotel() {
   const [hotelTires, setHotelTires] = useState([]);
   const [newTire, setNewTire] = useState({
     customerName: '', brand: '', size: '', quantity: '',
-    storageDate: '', retrievalDate: '', photo: null, notes: ''
+    storageDate: '', retrievalDate: '', photo: null, notes: '',
+    plateNumber: '', vehicleModel: ''
   });
   const [editingTire, setEditingTire] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [showExpiredOnly, setShowExpiredOnly] = useState(false);
+  const [tabValue, setTabValue] = useState(0);
 
   useEffect(() => {
-    // Simulating fetching data from an API
     const fetchTires = async () => {
-      // In a real application, you would fetch data from an API here
       const mockData = [
-        { id: 1, customerName: 'John Doe', brand: 'Michelin', size: '205/55R16', quantity: 4, storageDate: '2023-01-01', retrievalDate: '2023-12-31', notes: 'Winter tires', retrieved: false },
-        { id: 2, customerName: 'Jane Smith', brand: 'Goodyear', size: '225/45R17', quantity: 4, storageDate: '2023-02-15', retrievalDate: '2023-11-30', notes: 'Summer tires', retrieved: false },
+        { id: 1, customerName: 'John Doe', brand: 'Michelin', size: '205/55R16', quantity: 4, storageDate: '2023-01-01', retrievalDate: '2023-12-31', notes: 'Winter tires', retrieved: false, plateNumber: '34ABC123', vehicleModel: 'Toyota Corolla' },
+        { id: 2, customerName: 'Jane Smith', brand: 'Goodyear', size: '225/45R17', quantity: 4, storageDate: '2023-02-15', retrievalDate: '2023-11-30', notes: 'Summer tires', retrieved: false, plateNumber: '34XYZ789', vehicleModel: 'Ford Focus' },
       ];
       setHotelTires(mockData);
     };
@@ -111,7 +132,8 @@ function TireHotel() {
   const resetForm = () => {
     setNewTire({
       customerName: '', brand: '', size: '', quantity: '',
-      storageDate: '', retrievalDate: '', photo: null, notes: ''
+      storageDate: '', retrievalDate: '', photo: null, notes: '',
+      plateNumber: '', vehicleModel: ''
     });
     setEditingTire(null);
     setIsDialogOpen(false);
@@ -148,7 +170,8 @@ function TireHotel() {
     return hotelTires.filter(tire =>
       (tire.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       tire.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tire.size.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      tire.size.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tire.plateNumber.toLowerCase().includes(searchTerm.toLowerCase())) &&
       (!showExpiredOnly || (tire.retrievalDate && new Date(tire.retrievalDate) < new Date() && !tire.retrieved))
     );
   }, [hotelTires, searchTerm, showExpiredOnly]);
@@ -161,6 +184,8 @@ function TireHotel() {
 
   const columns = [
     { field: 'customerName', headerName: 'Müşteri Adı', width: 150 },
+    { field: 'plateNumber', headerName: 'Plaka', width: 120 },
+    { field: 'vehicleModel', headerName: 'Araç Modeli', width: 150 },
     { field: 'brand', headerName: 'Marka', width: 120 },
     { field: 'size', headerName: 'Ebat', width: 120 },
     { field: 'quantity', headerName: 'Adet', width: 80, type: 'number' },
@@ -191,7 +216,7 @@ function TireHotel() {
     {
       field: 'actions',
       headerName: 'İşlemler',
-      width: 200,
+      width: 300,
       renderCell: (params) => (
         <Box>
           <Tooltip title="Düzenle">
@@ -211,10 +236,82 @@ function TireHotel() {
               </Button>
             </Tooltip>
           )}
+          <Tooltip title="Depo Fişi Yazdır">
+            <IconButton onClick={() => generateStorageSlip(params.row)}>
+              <PrintIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Otel Fişi Oluştur">
+            <IconButton onClick={() => generateHotelReceipt(params.row)}>
+              <PictureAsPdfIcon />
+            </IconButton>
+          </Tooltip>
         </Box>
       ),
     },
   ];
+
+  const generateStorageSlip = (tire) => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+    const margin = 10;
+    const slipWidth = (pageWidth - 3 * margin) / 2;
+    const slipHeight = (pageHeight - 3 * margin) / 2;
+
+    const createSlip = (x, y) => {
+      doc.rect(x, y, slipWidth, slipHeight);
+      doc.setFontSize(12);
+      doc.text("Lastik Oteli Depo Fişi", x + 5, y + 10);
+      doc.setFontSize(10);
+      doc.text(`Plaka: ${tire.plateNumber}`, x + 5, y + 20);
+      doc.text(`Tarih: ${formatDate(tire.storageDate)}`, x + 5, y + 30);
+      doc.text(`Marka: ${tire.brand}`, x + 5, y + 40);
+      doc.text(`Ebat: ${tire.size}`, x + 5, y + 50);
+      doc.text(`Not: ${tire.notes}`, x + 5, y + 60);
+    };
+
+    // Create 4 slips on a single page
+    createSlip(margin, margin);
+    createSlip(margin * 2 + slipWidth, margin);
+    createSlip(margin, margin * 2 + slipHeight);
+    createSlip(margin * 2 + slipWidth, margin * 2 + slipHeight);
+
+    doc.save("lastik_oteli_depo_fisi.pdf");
+  };
+
+  const generateHotelReceipt = (tire) => {
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text("Lastik Oteli Fişi", 105, 20, null, null, "center");
+    
+    doc.setFontSize(12);
+    doc.text("Müşteri Bilgileri", 20, 40);
+    doc.setFontSize(10);
+    doc.text(`Ad Soyad: ${tire.customerName}`, 20, 50);
+    
+    doc.setFontSize(12);
+    doc.text("Araç Bilgileri", 20, 70);
+    doc.setFontSize(10);
+    doc.text(`Plaka: ${tire.plateNumber}`, 20, 80);
+    doc.text(`Model: ${tire.vehicleModel}`, 20, 90);
+    
+    doc.setFontSize(12);
+    doc.text("Lastik Bilgileri", 20, 110);
+    doc.setFontSize(10);
+    doc.text(`Marka: ${tire.brand}`, 20, 120);
+    doc.text(`Ebat: ${tire.size}`, 20, 130);
+    doc.text(`Adet: ${tire.quantity}`, 20, 140);
+    doc.text(`Depolama Tarihi: ${formatDate(tire.storageDate)}`, 20, 150);
+    doc.text(`Tahmini Alınma Tarihi: ${formatDate(tire.retrievalDate)}`, 20, 160);
+    doc.text(`Not: ${tire.notes}`, 20, 170);
+    
+    doc.setFontSize(12);
+    doc.text("İmza", 20, 200);
+    doc.line(20, 210, 100, 210);
+    
+    doc.save("lastik_oteli_fisi.pdf");
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -258,12 +355,12 @@ function TireHotel() {
             </Grid>
           </Grid>
         </Paper>
-
-        <Paper elevation={3} sx={{ height: 400, width: '100%' }}>
+  
+        <Paper elevation={3} sx={{ height: 600, width: '100%', marginBottom: 3 }}>
           <DataGrid
             rows={filteredTires}
             columns={columns}
-            pageSize={5}
+            pageSize={10}
             rowsPerPageOptions={[5, 10, 20]}
             checkboxSelection
             disableSelectionOnClick
@@ -272,7 +369,7 @@ function TireHotel() {
             }}
           />
         </Paper>
-
+  
         <Dialog open={isDialogOpen} onClose={resetForm} maxWidth="md" fullWidth>
           <DialogTitle>{editingTire ? 'Lastik Düzenle' : 'Yeni Lastik Ekle'}</DialogTitle>
           <DialogContent>
@@ -280,6 +377,12 @@ function TireHotel() {
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
                   <TextField fullWidth name="customerName" label="Müşteri Adı" value={newTire.customerName} onChange={handleChange} required />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField fullWidth name="plateNumber" label="Plaka" value={newTire.plateNumber} onChange={handleChange} required />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField fullWidth name="vehicleModel" label="Araç Modeli" value={newTire.vehicleModel} onChange={handleChange} required />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField fullWidth name="brand" label="Marka" value={newTire.brand} onChange={handleChange} required />
@@ -294,7 +397,7 @@ function TireHotel() {
                   <TextField fullWidth name="storageDate" label="Depolama Tarihi" type="date" InputLabelProps={{ shrink: true }} value={newTire.storageDate} onChange={handleChange} required />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <TextField fullWidth name="retrievalDate" label="Alınma Tarihi" type="date" InputLabelProps={{ shrink: true }} value={newTire.retrievalDate} onChange={handleChange} />
+                  <TextField fullWidth name="retrievalDate" label="Tahmini Alınma Tarihi" type="date" InputLabelProps={{ shrink: true }} value={newTire.retrievalDate} onChange={handleChange} />
                 </Grid>
                 <Grid item xs={12}>
                   <TextField fullWidth name="notes" label="Notlar" multiline rows={4} value={newTire.notes} onChange={handleChange} />
