@@ -174,50 +174,60 @@ function TireForm({ addTire }) {
             </FormControl>
           </Grid>
           <Grid item xs={12} sm={6}>
-            <TextField fullWidth name="price" label="Fiyat (TL)" type="number" value={tire.price} onChange={handleChange} required />
-          </Grid>
-          <Grid item xs={12} sm={6}>
             <TextField fullWidth name="stock" label="Stok Adedi" type="number" value={tire.stock} onChange={handleChange} required />
           </Grid>
-          <Grid item xs={12}>
-            <input
-              accept="image/*"
-              style={{ display: 'none' }}
-              id="raised-button-file"
-              multiple
-              type="file"
-              onChange={handleImageChange}
-            />
-            <label htmlFor="raised-button-file">
-              <Button variant="outlined" component="span" startIcon={<AddPhotoAlternateIcon />}>
-                Fotoğraf Ekle
-              </Button>
-            </label>
-            <Box mt={2}>
-              <Grid container spacing={2}>
-                {tire.images.map((image, index) => (
-                  <Grid item key={index}>
-                    <Box position="relative" width={100} height={100}>
-                      <img src={image} alt={`Lastik ${index + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
-                      <IconButton
-                        size="small"
-                        style={{ position: 'absolute', top: 0, right: 0, background: 'rgba(255,255,255,0.7)' }}
-                        onClick={() => removeImage(index)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Box>
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-          </Grid>
+          <Grid item xs={12} sm={6}>
+    <TextField fullWidth name="price" label="Fiyat (TL)" type="number" value={tire.price} onChange={handleChange} required />
+</Grid>
+  
+  <Grid item xs={6}>
+    <input
+      accept="image/*"
+      style={{ display: 'none' }}
+      id="raised-button-file"
+      multiple
+      type="file"
+      onChange={handleImageChange}
+    />
+    <label htmlFor="raised-button-file" style={{ height: '100%', display: 'flex' }}>
+      <Button
+        variant="outlined"
+        component="span"
+        startIcon={<AddPhotoAlternateIcon />}
+        fullWidth
+        style={{ height: '100%' }}
+      >
+        Fotoğraf Ekle
+      </Button>
+    </label>
+  </Grid>
+</Grid>
+<Grid item xs={12}>
+  <Box mt={1}>
+    <Grid container spacing={1}>
+      {tire.images.map((image, index) => (
+        <Grid item key={index}>
+          <Box position="relative" width={100} height={100}>
+            <img src={image} alt={`Lastik ${index + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
+            <IconButton
+              size="small"
+              style={{ position: 'absolute', top: 0, right: 0, background: 'rgba(255,255,255,0.7)' }}
+              onClick={() => removeImage(index)}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Box>
+        </Grid>
+      ))}
+    </Grid>
+  </Box>
+</Grid>
           <Grid item xs={12}>
             <StyledButton type="submit" variant="contained" color="primary" size="large" fullWidth>
               Lastik Ekle
             </StyledButton>
           </Grid>
-        </Grid>
+      
       </form>
     </StyledPaper>
   );
