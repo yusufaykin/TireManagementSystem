@@ -1,9 +1,84 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Paper, Typography, Grid, Card, CardContent, Avatar, useTheme, Modal, IconButton, Box, TextField, Button, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
-import { PieChart as PieChartIcon, AttachMoney as AttachMoneyIcon, TrendingUp as TrendingUpIcon, ShowChart as ShowChartIcon, Close as CloseIcon, Inventory as InventoryIcon, Category as CategoryIcon, LocalShipping as LocalShippingIcon, Speed as SpeedIcon } from '@mui/icons-material';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Area, AreaChart } from 'recharts';
+import { 
+  Paper, Typography, Grid, Card, CardContent, Avatar, useTheme, Modal, 
+  IconButton, Box, TextField, Button, FormControl, InputLabel, Select, 
+  MenuItem, Collapse 
+} from '@mui/material';
+import { 
+  PieChart as PieChartIcon, AttachMoney as AttachMoneyIcon, 
+  TrendingUp as TrendingUpIcon, ShowChart as ShowChartIcon, 
+  Close as CloseIcon, Inventory as InventoryIcon, 
+  Category as CategoryIcon, LocalShipping as LocalShippingIcon, 
+  Speed as SpeedIcon, TrendingDown as TrendingDownIcon,
+  ExpandMore as ExpandMoreIcon, ExpandLess as ExpandLessIcon
+} from '@mui/icons-material';
+import { 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
+  ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Area, AreaChart 
+} from 'recharts';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#8DD1E1'];
+
+const StatCard = ({ stat }) => (
+  <Card
+    sx={{
+      bgcolor: stat.color,
+      color: 'white',
+      boxShadow: '0 4px 20px 0 rgba(0,0,0,0.12)',
+      borderRadius: 3,
+      transition: 'all 0.3s ease-in-out',
+      '&:hover': {
+        transform: 'translateY(-5px) scale(1.02)',
+        boxShadow: '0 12px 20px 0 rgba(0,0,0,0.2)',
+      },
+      overflow: 'hidden',
+      position: 'relative',
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+    }}
+  >
+    <CardContent sx={{ p: 3, flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+      <Box>
+        <Avatar sx={{ 
+          bgcolor: 'rgba(255, 255, 255, 0.4)', 
+          width: 60, 
+          height: 60, 
+          mb: 2,
+          boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
+        }}>
+          {stat.icon}
+        </Avatar>
+        <Typography variant="body1" sx={{ 
+          fontWeight: 'medium', 
+          fontSize: '1.1rem', 
+          mb: 1,
+          textShadow: '1px 1px 2px rgba(0,0,0,0.1)'
+        }}>
+          {stat.label}
+        </Typography>
+      </Box>
+      <Typography variant="h6" sx={{ 
+        fontWeight: 'bold',
+        textShadow: '1px 1px 2px rgba(0,0,0,0.1)',
+        mt: 2,
+      }}>
+        {stat.value}
+      </Typography>
+    </CardContent>
+    <Box 
+      sx={{ 
+        position: 'absolute', 
+        top: 0, 
+        right: 0, 
+        width: '50%', 
+        height: '100%', 
+        background: 'rgba(255,255,255,0.1)', 
+        transform: 'skew(-20deg) translateX(50%)',
+      }}
+    />
+  </Card>
+);
 
 function Dashboard({ tires = [], sales = [] }) {
   const theme = useTheme();
@@ -12,6 +87,11 @@ function Dashboard({ tires = [], sales = [] }) {
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [selectedBrand, setSelectedBrand] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
+  const [expanded, setExpanded] = useState(false);
+
+  const handleExpandClick = () => {
+    setExpanded(!expanded);
+  };
 
   const statistics = useMemo(() => {
     const totalTires = tires.reduce((sum, tire) => sum + (Number(tire.stock) || 0), 0);
@@ -21,7 +101,6 @@ function Dashboard({ tires = [], sales = [] }) {
     const uniqueBrands = new Set(tires.map(tire => tire.brand).filter(Boolean)).size;
     const averagePrice = totalTires > 0 ? totalValue / totalTires : 0;
 
-    // En çok satan lastiği bulmak için satış miktarlarını hesaplayalım
     const tireSales = {};
     sales.forEach(sale => {
       if (tireSales[sale.tireId]) {
@@ -31,12 +110,34 @@ function Dashboard({ tires = [], sales = [] }) {
       }
     });
 
-    // En çok satan lastiği bulalım
-    const topSellingTireId = Object.keys(tireSales).reduce((a, b) => tireSales[a] > tireSales[b] ? a : b);
-    const topSellingTire = tires.find(tire => tire.id === topSellingTireId) || {};
+    let topSellingTire = { brand: 'Bilinmiyor', model: 'Bilinmiyor', quantity: 0 };
+    if (Object.keys(tireSales).length > 0) {
+      const topSellingTireId = Object.keys(tireSales).reduce((a, b) => tireSales[a] > tireSales[b] ? a : b);
+      const foundTire = tires.find(tire => tire.id === topSellingTireId);
+      if (foundTire) {
+        topSellingTire = { 
+          brand: foundTire.brand || 'Bilinmiyor', 
+          model: foundTire.model || 'Bilinmiyor', 
+          quantity: tireSales[topSellingTireId] 
+        };
+      }
+    }
     
     const inventoryTurnover = totalValue > 0 ? totalSales / totalValue : 0;
 
+    let lowestStockTire = { brand: 'Bilinmiyor', stock: 0 };
+    if (tires.length > 0) {
+      lowestStockTire = tires.reduce((min, tire) => 
+        (Number(tire.stock) || 0) < (Number(min.stock) || Infinity) ? tire : min
+      , {stock: Infinity});
+    }
+
+    const averageProfit = totalSales > 0 ? totalProfit / totalSales * 100 : 0;
+    const mostExpensiveTire = tires.reduce((max, tire) => (Number(tire.price) > Number(max.price) ? tire : max), { price: 0 });
+    const leastProfitableTire = sales.reduce((min, sale) => {
+      const profitMargin = (Number(sale.profit) / (Number(sale.price) * Number(sale.quantity))) * 100;
+      return profitMargin < min.profitMargin ? { ...sale, profitMargin } : min;
+    }, { profitMargin: Infinity });
 
     return [
       { icon: <PieChartIcon fontSize="large" />, label: 'Toplam Lastik Sayısı', value: totalTires, color: '#3f51b5' },
@@ -45,8 +146,12 @@ function Dashboard({ tires = [], sales = [] }) {
       { icon: <ShowChartIcon fontSize="large" />, label: 'Toplam Kâr', value: `${totalProfit.toFixed(2)} TL`, color: '#ff9800' },
       { icon: <InventoryIcon fontSize="large" />, label: 'Benzersiz Marka Sayısı', value: uniqueBrands, color: '#9c27b0' },
       { icon: <CategoryIcon fontSize="large" />, label: 'Ortalama Lastik Fiyatı', value: `${averagePrice.toFixed(2)} TL`, color: '#2196f3' },
-      { icon: <LocalShippingIcon fontSize="large" />, label: 'En Çok Satan Lastik', value: `${topSellingTire.brand || 'N/A'} (${tireSales[topSellingTireId] || 0} adet)`, color: '#607d8b' },
+      { icon: <LocalShippingIcon fontSize="large" />, label: 'En Çok Satan Lastik', value: `${topSellingTire.brand} ${topSellingTire.model} (${topSellingTire.quantity} adet)`, color: '#607d8b' },
       { icon: <SpeedIcon fontSize="large" />, label: 'Stok Devir Hızı', value: inventoryTurnover.toFixed(2), color: '#795548' },
+      { icon: <TrendingDownIcon fontSize="large" />, label: 'En Düşük Stoklu Lastik', value: `${lowestStockTire.brand || 'Bilinmiyor'} (${lowestStockTire.stock || 0} adet)`, color: '#e91e63' },
+      { icon: <TrendingUpIcon fontSize="large" />, label: 'Ortalama Kâr Marjı', value: `${averageProfit.toFixed(2)}%`, color: '#4caf50' },
+      { icon: <AttachMoneyIcon fontSize="large" />, label: 'En Pahalı Lastik', value: `${mostExpensiveTire.brand} ${mostExpensiveTire.model} (${Number(mostExpensiveTire.price).toFixed(2)} TL)`, color: '#f44336' },
+      { icon: <TrendingDownIcon fontSize="large" />, label: 'En Düşük Kâr Marjlı Satış', value: `${leastProfitableTire.tireId} (${leastProfitableTire.profitMargin.toFixed(2)}%)`, color: '#ff9800' },
     ];
   }, [tires, sales]);
 
@@ -278,63 +383,36 @@ function Dashboard({ tires = [], sales = [] }) {
       </Typography>
       
       <Grid container spacing={4} sx={{ mb: 4 }}>
-        {statistics.map((stat, index) => (
+        {statistics.slice(0, 4).map((stat, index) => (
           <Grid item xs={12} sm={6} md={3} key={index}>
-            <Card
-              sx={{
-                bgcolor: stat.color,
-                color: 'white',
-                boxShadow: '0 4px 20px 0 rgba(0,0,0,0.12)',
-                borderRadius: 3,
-                transition: 'all 0.3s ease-in-out',
-                '&:hover': {
-                  transform: 'translateY(-5px) scale(1.02)',
-                  boxShadow: '0 12px 20px 0 rgba(0,0,0,0.2)',
-                },
-                overflow: 'hidden',
-                position: 'relative',
-              }}
-            >
-              <CardContent sx={{ p: 3 }}>
-                <Avatar sx={{ 
-                  bgcolor: 'rgba(255, 255, 255, 0.4)', 
-                  width: 60, 
-                  height: 60, 
-                  mb: 2,
-                  boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
-                }}>
-                  {stat.icon}
-                </Avatar>
-                <Typography variant="body1" sx={{ 
-                  fontWeight: 'medium', 
-                  fontSize: '1.1rem', 
-                  mb: 1,
-                  textShadow: '1px 1px 2px rgba(0,0,0,0.1)'
-                }}>
-                  {stat.label}
-                </Typography>
-                <Typography variant="h5" sx={{ 
-                  fontWeight: 'bold',
-                  textShadow: '1px 1px 2px rgba(0,0,0,0.1)'
-                }}>
-                  {stat.value}
-                </Typography>
-              </CardContent>
-              <Box 
-                sx={{ 
-                  position: 'absolute', 
-                  top: 0, 
-                  right: 0, 
-                  width: '50%', 
-                  height: '100%', 
-                  background: 'rgba(255,255,255,0.1)', 
-                  transform: 'skew(-20deg) translateX(50%)',
-                }}
-              />
-            </Card>
+            <StatCard stat={stat} />
           </Grid>
         ))}
       </Grid>
+
+      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+        <IconButton
+          onClick={handleExpandClick}
+          aria-expanded={expanded}
+          aria-label="show more"
+          sx={{
+            transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.3s',
+          }}
+        >
+          {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+        </IconButton>
+      </Box>
+
+      <Collapse in={expanded} timeout="auto" unmountOnExit>
+        <Grid container spacing={4} sx={{ mb: 4 }}>
+          {statistics.slice(4).map((stat, index) => (
+            <Grid item xs={12} sm={6} md={3} key={index + 4}>
+              <StatCard stat={stat} />
+            </Grid>
+          ))}
+        </Grid>
+      </Collapse>
 
       <Typography variant="h5" color="primary" sx={{ 
         mb: 4, 
