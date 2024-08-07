@@ -1,42 +1,111 @@
-import React, { useState } from 'react';
-import { Paper, Typography, Grid, Card, CardContent, Avatar, useTheme, Modal, IconButton, Box } from '@mui/material';
-import { PieChart as PieChartIcon, AttachMoney as AttachMoneyIcon, TrendingUp as TrendingUpIcon, ShowChart as ShowChartIcon, Close as CloseIcon } from '@mui/icons-material';
+import React, { useState, useMemo, useCallback } from 'react';
+import { Paper, Typography, Grid, Card, CardContent, Avatar, useTheme, Modal, IconButton, Box, TextField, Button, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { PieChart as PieChartIcon, AttachMoney as AttachMoneyIcon, TrendingUp as TrendingUpIcon, ShowChart as ShowChartIcon, Close as CloseIcon, Inventory as InventoryIcon, Category as CategoryIcon, LocalShipping as LocalShippingIcon, Speed as SpeedIcon } from '@mui/icons-material';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Area, AreaChart } from 'recharts';
 
-function Dashboard({ tires, sales }) {
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#8DD1E1'];
+
+function Dashboard({ tires = [], sales = [] }) {
   const theme = useTheme();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedChart, setSelectedChart] = useState(null);
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [selectedBrand, setSelectedBrand] = useState('');
+  const [selectedSize, setSelectedSize] = useState('');
 
-  const totalTires = tires.reduce((sum, tire) => sum + Number(tire.stock), 0);
-  const totalValue = tires.reduce((sum, tire) => sum + (Number(tire.price) * Number(tire.stock)), 0);
-  const totalSales = sales.reduce((sum, sale) => sum + (Number(sale.price) * Number(sale.quantity)), 0);
-  const totalProfit = sales.reduce((sum, sale) => sum + Number(sale.profit), 0);
+  const statistics = useMemo(() => {
+    const totalTires = tires.reduce((sum, tire) => sum + (Number(tire.stock) || 0), 0);
+    const totalValue = tires.reduce((sum, tire) => sum + ((Number(tire.price) || 0) * (Number(tire.stock) || 0)), 0);
+    const totalSales = sales.reduce((sum, sale) => sum + ((Number(sale.price) || 0) * (Number(sale.quantity) || 0)), 0);
+    const totalProfit = sales.reduce((sum, sale) => sum + (Number(sale.profit) || 0), 0);
+    const uniqueBrands = new Set(tires.map(tire => tire.brand).filter(Boolean)).size;
+    const averagePrice = totalTires > 0 ? totalValue / totalTires : 0;
 
-  const statistics = [
-    { icon: <PieChartIcon fontSize="large" />, label: 'Toplam Lastik Sayısı', value: totalTires, color: '#3f51b5' },
-    { icon: <AttachMoneyIcon fontSize="large" />, label: 'Toplam Stok Değeri', value: `${totalValue.toFixed(2)} TL`, color: '#f44336' },
-    { icon: <TrendingUpIcon fontSize="large" />, label: 'Toplam Satış', value: `${totalSales.toFixed(2)} TL`, color: '#4caf50' },
-    { icon: <ShowChartIcon fontSize="large" />, label: 'Toplam Kâr', value: `${totalProfit.toFixed(2)} TL`, color: '#ff9800' },
-  ];
+    // En çok satan lastiği bulmak için satış miktarlarını hesaplayalım
+    const tireSales = {};
+    sales.forEach(sale => {
+      if (tireSales[sale.tireId]) {
+        tireSales[sale.tireId] += Number(sale.quantity) || 0;
+      } else {
+        tireSales[sale.tireId] = Number(sale.quantity) || 0;
+      }
+    });
 
-  const salesData = sales.map(sale => ({
-    date: new Date(sale.date).toLocaleDateString(),
-    sales: Number(sale.price) * Number(sale.quantity),
-    profit: Number(sale.profit)
-  }));
+    // En çok satan lastiği bulalım
+    const topSellingTireId = Object.keys(tireSales).reduce((a, b) => tireSales[a] > tireSales[b] ? a : b);
+    const topSellingTire = tires.find(tire => tire.id === topSellingTireId) || {};
+    
+    const inventoryTurnover = totalValue > 0 ? totalSales / totalValue : 0;
+
+
+    return [
+      { icon: <PieChartIcon fontSize="large" />, label: 'Toplam Lastik Sayısı', value: totalTires, color: '#3f51b5' },
+      { icon: <AttachMoneyIcon fontSize="large" />, label: 'Toplam Stok Değeri', value: `${totalValue.toFixed(2)} TL`, color: '#f44336' },
+      { icon: <TrendingUpIcon fontSize="large" />, label: 'Toplam Satış', value: `${totalSales.toFixed(2)} TL`, color: '#4caf50' },
+      { icon: <ShowChartIcon fontSize="large" />, label: 'Toplam Kâr', value: `${totalProfit.toFixed(2)} TL`, color: '#ff9800' },
+      { icon: <InventoryIcon fontSize="large" />, label: 'Benzersiz Marka Sayısı', value: uniqueBrands, color: '#9c27b0' },
+      { icon: <CategoryIcon fontSize="large" />, label: 'Ortalama Lastik Fiyatı', value: `${averagePrice.toFixed(2)} TL`, color: '#2196f3' },
+      { icon: <LocalShippingIcon fontSize="large" />, label: 'En Çok Satan Lastik', value: `${topSellingTire.brand || 'N/A'} (${tireSales[topSellingTireId] || 0} adet)`, color: '#607d8b' },
+      { icon: <SpeedIcon fontSize="large" />, label: 'Stok Devir Hızı', value: inventoryTurnover.toFixed(2), color: '#795548' },
+    ];
+  }, [tires, sales]);
+
+  const salesData = useMemo(() => 
+    sales.map(sale => ({
+      date: new Date(sale.date).toLocaleDateString(),
+      sales: (Number(sale.price) || 0) * (Number(sale.quantity) || 0),
+      profit: Number(sale.profit) || 0
+    }))
+  , [sales]);
+
+  const tireData = useMemo(() => 
+    tires.map(tire => ({
+      name: tire.name || 'N/A',
+      brand: tire.brand || 'N/A',
+      size: tire.size || 'N/A',
+      stock: Number(tire.stock) || 0,
+      value: (Number(tire.price) || 0) * (Number(tire.stock) || 0)
+    }))
+  , [tires]);
 
   const handleChartClick = (chartType) => {
     setSelectedChart(chartType);
     setModalOpen(true);
   };
 
-  const renderChart = (chartType, height = 300) => {
+  const handleDateRangeChange = (event) => {
+    setDateRange({ ...dateRange, [event.target.name]: event.target.value });
+  };
+
+  const filterDataByDateRange = useCallback((data) => {
+    if (!dateRange.start || !dateRange.end) return data;
+    const start = new Date(dateRange.start);
+    const end = new Date(dateRange.end);
+    return data.filter(item => {
+      const itemDate = new Date(item.date);
+      return itemDate >= start && itemDate <= end;
+    });
+  }, [dateRange]);
+
+  const filterTireData = useCallback((data) => {
+    return data.filter(tire => 
+      (!selectedBrand || tire.brand === selectedBrand) &&
+      (!selectedSize || tire.size === selectedSize)
+    );
+  }, [selectedBrand, selectedSize]);
+
+  const uniqueBrands = useMemo(() => [...new Set(tires.map(tire => tire.brand))], [tires]);
+  const uniqueSizes = useMemo(() => [...new Set(tires.map(tire => tire.size))], [tires]);
+
+  const renderChart = (chartType, height = 300, data = salesData) => {
+    const filteredSalesData = filterDataByDateRange(data);
+    const filteredTireData = filterTireData(tireData);
+    
     switch (chartType) {
       case 'line':
         return (
           <ResponsiveContainer width="100%" height={height}>
-            <LineChart data={salesData}>
+            <LineChart data={filteredSalesData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis yAxisId="left" />
@@ -51,7 +120,7 @@ function Dashboard({ tires, sales }) {
       case 'bar':
         return (
           <ResponsiveContainer width="100%" height={height}>
-            <BarChart data={salesData}>
+            <BarChart data={filteredSalesData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis yAxisId="left" />
@@ -66,7 +135,7 @@ function Dashboard({ tires, sales }) {
       case 'area':
         return (
           <ResponsiveContainer width="100%" height={height}>
-            <AreaChart data={salesData}>
+            <AreaChart data={filteredSalesData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
@@ -78,13 +147,12 @@ function Dashboard({ tires, sales }) {
           </ResponsiveContainer>
         );
       case 'pie':
-        const totalSales = salesData.reduce((sum, data) => sum + data.sales, 0);
-        const totalProfit = salesData.reduce((sum, data) => sum + data.profit, 0);
+        const totalSales = filteredSalesData.reduce((sum, data) => sum + data.sales, 0);
+        const totalProfit = filteredSalesData.reduce((sum, data) => sum + data.profit, 0);
         const pieData = [
           { name: 'Satış', value: totalSales },
           { name: 'Kâr', value: totalProfit },
         ];
-        const COLORS = ['#0088FE', '#00C49F'];
         return (
           <ResponsiveContainer width="100%" height={height}>
             <PieChart>
@@ -99,6 +167,85 @@ function Dashboard({ tires, sales }) {
                 label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
               >
                 {pieData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        );
+      case 'tire-line':
+      case 'tire-bar':
+      case 'tire-area':
+      case 'tire-pie':
+        return renderTireChart(chartType, height, filteredTireData);
+      default:
+        return null;
+    }
+  };
+
+  const renderTireChart = (chartType, height, data) => {
+    switch (chartType) {
+      case 'tire-line':
+        return (
+          <ResponsiveContainer width="100%" height={height}>
+            <LineChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis yAxisId="left" />
+              <YAxis yAxisId="right" orientation="right" />
+              <Tooltip />
+              <Legend />
+              <Line yAxisId="left" type="monotone" dataKey="stock" stroke="#8884d8" name="Stok" strokeWidth={2} />
+              <Line yAxisId="right" type="monotone" dataKey="value" stroke="#82ca9d" name="Değer" strokeWidth={2} />
+            </LineChart>
+          </ResponsiveContainer>
+        );
+      case 'tire-bar':
+        return (
+          <ResponsiveContainer width="100%" height={height}>
+            <BarChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis yAxisId="left" />
+              <YAxis yAxisId="right" orientation="right" />
+              <Tooltip />
+              <Legend />
+              <Bar yAxisId="left" dataKey="stock" fill="#8884d8" name="Stok" />
+              <Bar yAxisId="right" dataKey="value" fill="#82ca9d" name="Değer" />
+            </BarChart>
+          </ResponsiveContainer>
+        );
+      case 'tire-area':
+        return (
+          <ResponsiveContainer width="100%" height={height}>
+            <AreaChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Area type="monotone" dataKey="stock" stackId="1" stroke="#8884d8" fill="#8884d8" name="Stok" />
+              <Area type="monotone" dataKey="value" stackId="1" stroke="#82ca9d" fill="#82ca9d" name="Değer" />
+            </AreaChart>
+          </ResponsiveContainer>
+        );
+      case 'tire-pie':
+        return (
+          <ResponsiveContainer width="100%" height={height}>
+            <PieChart>
+              <Pie
+                data={data}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              >
+                {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
@@ -127,7 +274,7 @@ function Dashboard({ tires, sales }) {
         textAlign: 'center',
         textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
       }}>
-        Dashboard
+        Lastik Satış Dashboard'u
       </Typography>
       
       <Grid container spacing={4} sx={{ mb: 4 }}>
@@ -197,6 +344,68 @@ function Dashboard({ tires, sales }) {
         Satış ve Kâr Grafikleri
       </Typography>
 
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+        <TextField
+          label="Başlangıç Tarihi"
+          type="date"
+          name="start"
+          value={dateRange.start}
+          onChange={handleDateRangeChange}
+          InputLabelProps={{ shrink: true }}
+        />
+        <TextField
+          label="Bitiş Tarihi"
+          type="date"
+          name="end"
+          value={dateRange.end}
+          onChange={handleDateRangeChange}
+          InputLabelProps={{ shrink: true }}
+        />
+        <FormControl sx={{ minWidth: 120 }}>
+          <InputLabel id="brand-select-label">Marka</InputLabel>
+          <Select
+            labelId="brand-select-label"
+            value={selectedBrand}
+            onChange={(e) => setSelectedBrand(e.target.value)}
+            label="Marka"
+          >
+            <MenuItem value="">
+              <em>Hepsi</em>
+            </MenuItem>
+            {uniqueBrands.map((brand) => (
+              <MenuItem key={brand} value={brand}>{brand}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl sx={{ minWidth: 120 }}>
+          <InputLabel id="size-select-label">Boyut</InputLabel>
+          <Select
+            labelId="size-select-label"
+            value={selectedSize}
+            onChange={(e) => setSelectedSize(e.target.value)}
+            label="Boyut"
+          >
+            <MenuItem value="">
+              <em>Hepsi</em>
+            </MenuItem>
+            {uniqueSizes.map((size) => (
+              <MenuItem key={size} value={size}>{size}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <Button 
+          variant="contained" 
+          onClick={() => {
+            setDateRange({ start: '', end: '' });
+            setSelectedBrand('');
+            setSelectedSize('');
+          }}
+          sx={{ height: '56px' }}
+        >
+          Filtreleri Temizle
+        </Button>
+      </Box>
+
       <Grid container spacing={4}>
         {['line', 'bar', 'area', 'pie'].map((chartType) => (
           <Grid item xs={12} md={6} key={chartType}>
@@ -222,9 +431,64 @@ function Dashboard({ tires, sales }) {
                   color: theme.palette.primary.main,
                   textShadow: '1px 1px 2px rgba(0,0,0,0.1)'
                 }}>
-                  {chartType === 'line' ? 'Çizgi Grafiği' : 
-                   chartType === 'bar' ? 'Sütun Grafiği' : 
-                   chartType === 'area' ? 'Alan Grafiği' : 'Pasta Grafiği'}
+                  {chartType === 'line' ? 'Satış ve Kâr Çizgi Grafiği' : 
+                   chartType === 'bar' ? 'Satış ve Kâr Sütun Grafiği' : 
+                   chartType === 'area' ? 'Satış ve Kâr Alan Grafiği' : 'Satış ve Kâr Pasta Grafiği'}
+                </Typography>
+                {renderChart(chartType)}
+              </CardContent>
+              <Box 
+                sx={{ 
+                  position: 'absolute', 
+                  bottom: 0, 
+                  left: 0, 
+                  width: '100%', 
+                  height: '5px', 
+                  background: 'linear-gradient(90deg, #00C9FF 0%, #92FE9D 100%)',
+                }}
+              />
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      <Typography variant="h5" color="primary" sx={{ 
+        mt: 6,
+        mb: 4, 
+        textAlign: 'center',
+        textShadow: '1px 1px 2px rgba(0,0,0,0.1)'
+      }}>
+        Lastik Stok ve Değer Grafikleri
+      </Typography>
+
+      <Grid container spacing={4}>
+        {['tire-line', 'tire-bar', 'tire-area', 'tire-pie'].map((chartType) => (
+          <Grid item xs={12} md={6} key={chartType}>
+            <Card 
+              sx={{ 
+                height: '100%', 
+                cursor: 'pointer',
+                transition: 'all 0.3s ease-in-out',
+                '&:hover': {
+                  transform: 'scale(1.02)',
+                  boxShadow: '0 8px 16px 0 rgba(0,0,0,0.2)',
+                },
+                position: 'relative',
+                overflow: 'hidden',
+                borderRadius: 3,
+              }}
+              onClick={() => handleChartClick(chartType)}
+            >
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="h6" gutterBottom sx={{ 
+                  textAlign: 'center',
+                  fontWeight: 'bold',
+                  color: theme.palette.primary.main,
+                  textShadow: '1px 1px 2px rgba(0,0,0,0.1)'
+                }}>
+                  {chartType === 'tire-line' ? 'Lastik Stok ve Değer Çizgi Grafiği' : 
+                   chartType === 'tire-bar' ? 'Lastik Stok ve Değer Sütun Grafiği' : 
+                   chartType === 'tire-area' ? 'Lastik Stok ve Değer Alan Grafiği' : 'Lastik Stok ve Değer Pasta Grafiği'}
                 </Typography>
                 {renderChart(chartType)}
               </CardContent>
@@ -280,9 +544,13 @@ function Dashboard({ tires, sales }) {
             color: theme.palette.primary.main,
             textShadow: '1px 1px 2px rgba(0,0,0,0.1)'
           }}>
-            {selectedChart === 'line' ? 'Çizgi Grafiği' : 
-             selectedChart === 'bar' ? 'Sütun Grafiği' : 
-             selectedChart === 'area' ? 'Alan Grafiği' : 'Pasta Grafiği'}
+            {selectedChart === 'line' ? 'Satış ve Kâr Çizgi Grafiği' : 
+             selectedChart === 'bar' ? 'Satış ve Kâr Sütun Grafiği' : 
+             selectedChart === 'area' ? 'Satış ve Kâr Alan Grafiği' : 
+             selectedChart === 'pie' ? 'Satış ve Kâr Pasta Grafiği' :
+             selectedChart === 'tire-line' ? 'Lastik Stok ve Değer Çizgi Grafiği' : 
+             selectedChart === 'tire-bar' ? 'Lastik Stok ve Değer Sütun Grafiği' : 
+             selectedChart === 'tire-area' ? 'Lastik Stok ve Değer Alan Grafiği' : 'Lastik Stok ve Değer Pasta Grafiği'}
           </Typography>
           {renderChart(selectedChart, 600)}
         </Box>
