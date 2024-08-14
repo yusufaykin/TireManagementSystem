@@ -53,7 +53,9 @@ import CurrentAccount from "./components/CurrentAccount";
 import Inventory from "./components/Inventory";
 import Deliveries from "./components/Deliveries";
 import VehicleTracking from "./components/VehicleTracking";
+import WorkerTracking from "./components/WorkerTracking";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
+import PersonIcon from "@mui/icons-material/Person";
 
 const drawerWidth = 240;
 
@@ -351,6 +353,11 @@ const App = () => {
       icon: <DirectionsCarIcon />,
       component: "VehicleTracking",
     },
+    {
+      text: "İşçi Takip",
+      icon: <PersonIcon />,
+      component: "WorkerTracking",
+    },
     { text: "Ayarlar", icon: <LocalShippingIcon />, component: "Settings" },
   ];
 
@@ -412,6 +419,8 @@ const App = () => {
         return <Inventory inventory={inventory} tires={tires} />;
       case "VehicleTracking":
         return <VehicleTracking />;
+      case "WorkerTracking":
+        return <WorkerTracking />;
       case "Deliveries":
         return (
           <Deliveries
