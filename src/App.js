@@ -52,6 +52,8 @@ import TireHotel from "./components/TireHotel";
 import CurrentAccount from "./components/CurrentAccount";
 import Inventory from "./components/Inventory";
 import Deliveries from "./components/Deliveries";
+import VehicleTracking from "./components/VehicleTracking";
+import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 
 const drawerWidth = 240;
 
@@ -140,6 +142,7 @@ const App = () => {
   const [notifications, setNotifications] = useState(3);
   const [inventory, setInventory] = useState([]);
   const [deliveries, setDeliveries] = useState([]);
+  const [vehicles, setVehicles] = useState([]);
 
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
   const isMobile = useMediaQuery("(max-width:600px)");
@@ -334,13 +337,19 @@ const App = () => {
       component: "Dashboard",
     },
     { text: "Lastik Ekle", icon: <AddCircleIcon />, component: "TireForm" },
+    { text: "Lastik Listesi", icon: <ListAltIcon />, component: "TireList" },
     { text: "Lastik Sat", icon: <SellIcon />, component: "SaleForm" },
     { text: "Lastik Oteli", icon: <HotelIcon />, component: "TireHotel" },
-    { text: "Lastik Listesi", icon: <ListAltIcon />, component: "TireList" },
+
     {
       text: "Cari Hesap",
       icon: <AnalyticsIcon />,
       component: "CurrentAccount",
+    },
+    {
+      text: "Araç Takip",
+      icon: <DirectionsCarIcon />,
+      component: "VehicleTracking",
     },
     { text: "Ayarlar", icon: <LocalShippingIcon />, component: "Settings" },
   ];
@@ -397,10 +406,12 @@ const App = () => {
         );
       case "TireList":
         return <TireList tires={tires} />;
-      case "CurrentAccount": 
+      case "CurrentAccount":
         return <CurrentAccount tires={tires} />;
       case "Inventory":
         return <Inventory inventory={inventory} tires={tires} />;
+      case "VehicleTracking":
+        return <VehicleTracking />;
       case "Deliveries":
         return (
           <Deliveries
