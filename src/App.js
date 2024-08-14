@@ -56,6 +56,9 @@ import VehicleTracking from "./components/VehicleTracking";
 import WorkerTracking from "./components/WorkerTracking";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import PersonIcon from "@mui/icons-material/Person";
+import AppointmentSystem from "./components/AppointmentSystem";
+import "antd/dist/reset.css";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 
 const drawerWidth = 240;
 
@@ -358,6 +361,11 @@ const App = () => {
       icon: <PersonIcon />,
       component: "WorkerTracking",
     },
+    {
+      text: "Randevu Sistemi",
+      icon: <CalendarTodayIcon />,
+      component: "AppointmentSystem",
+    },
     { text: "Ayarlar", icon: <LocalShippingIcon />, component: "Settings" },
   ];
 
@@ -421,6 +429,8 @@ const App = () => {
         return <VehicleTracking />;
       case "WorkerTracking":
         return <WorkerTracking />;
+      case "AppointmentSystem":
+        return <AppointmentSystem />;
       case "Deliveries":
         return (
           <Deliveries
