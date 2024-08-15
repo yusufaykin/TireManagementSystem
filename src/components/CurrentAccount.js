@@ -102,10 +102,7 @@ import {
 } from "recharts";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
-import MenuIcon from "@mui/icons-material/Menu";
 import Badge from "@mui/material/Badge";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import TableChartIcon from "@mui/icons-material/TableChart";
 import Fab from "@mui/material/Fab";
@@ -123,7 +120,11 @@ const handleDownloadInvoice = (invoice) => {
   doc.setFontSize(12);
   doc.text(`Fatura No: ${invoice.number}`, 14, 30);
   doc.text(`Tarih: ${new Date(invoice.date).toLocaleDateString()}`, 14, 37);
-  doc.text(`Vade Tarihi: ${new Date(invoice.dueDate).toLocaleDateString()}`, 14, 44);
+  doc.text(
+    `Vade Tarihi: ${new Date(invoice.dueDate).toLocaleDateString()}`,
+    14,
+    44
+  );
   doc.text(`Müşteri: ${invoice.customerName}`, 14, 51);
 
   // Fatura kalemleri tablosu
@@ -137,9 +138,26 @@ const handleDownloadInvoice = (invoice) => {
       `${(item.quantity * item.price).toFixed(2)} ${invoice.currency}`,
     ]),
     foot: [
-      ["", "", "Ara Toplam:", `${(invoice.total - invoice.total * 0.18).toFixed(2)} ${invoice.currency}`],
-      ["", "", "KDV (%18):", `${(invoice.total * 0.18).toFixed(2)} ${invoice.currency}`],
-      ["", "", "Genel Toplam:", `${invoice.total.toFixed(2)} ${invoice.currency}`],
+      [
+        "",
+        "",
+        "Ara Toplam:",
+        `${(invoice.total - invoice.total * 0.18).toFixed(2)} ${
+          invoice.currency
+        }`,
+      ],
+      [
+        "",
+        "",
+        "KDV (%18):",
+        `${(invoice.total * 0.18).toFixed(2)} ${invoice.currency}`,
+      ],
+      [
+        "",
+        "",
+        "Genel Toplam:",
+        `${invoice.total.toFixed(2)} ${invoice.currency}`,
+      ],
     ],
     theme: "striped",
   });
@@ -181,31 +199,6 @@ const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })(
     }),
   })
 );
-
-const AppBarStyled = styled(AppBar, {
-  shouldForwardProp: (prop) => prop !== "open",
-})(({ theme, open }) => ({
-  transition: theme.transitions.create(["margin", "width"], {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  ...(open && {
-    width: `calc(100% - ${drawerWidth}px)`,
-    marginLeft: `${drawerWidth}px`,
-    transition: theme.transitions.create(["margin", "width"], {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  }),
-}));
-
-const DrawerHeader = styled("div")(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  padding: theme.spacing(0, 1),
-  ...theme.mixins.toolbar,
-  justifyContent: "flex-end",
-}));
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -512,14 +505,6 @@ const CurrentAccount = () => {
     setPage(0);
   };
 
-  const handleDrawerOpen = () => {
-    setOpenDrawer(true);
-  };
-
-  const handleDrawerClose = () => {
-    setOpenDrawer(false);
-  };
-
   const handleTabChange = (event, newValue) => {
     setCurrentTab(newValue);
   };
@@ -533,16 +518,18 @@ const CurrentAccount = () => {
     // Fatura düzenleme işlemi için gerekli kodu buraya ekleyin
     console.log("Fatura düzenleniyor:", invoiceId);
   };
-  
+
   const handleDeleteInvoice = (invoiceId) => {
     setInvoices((prevInvoices) => {
-      const updatedInvoices = prevInvoices.filter((invoice) => invoice.id !== invoiceId);
-      localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+      const updatedInvoices = prevInvoices.filter(
+        (invoice) => invoice.id !== invoiceId
+      );
+      localStorage.setItem("invoices", JSON.stringify(updatedInvoices));
       return updatedInvoices;
     });
     showSnackbar("Fatura başarıyla silindi.", "success");
   };
-  
+
   const handleTogglePaymentStatus = (invoiceId) => {
     setInvoices((prevInvoices) => {
       const updatedInvoices = prevInvoices.map((invoice) => {
@@ -552,7 +539,7 @@ const CurrentAccount = () => {
         }
         return invoice;
       });
-      localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+      localStorage.setItem("invoices", JSON.stringify(updatedInvoices));
       return updatedInvoices;
     });
     showSnackbar("Fatura ödeme durumu güncellendi.", "success");
@@ -734,7 +721,7 @@ const CurrentAccount = () => {
       number: invoiceDetails.number,
       date: invoiceDetails.date,
       dueDate: invoiceDetails.dueDate,
-      customerName: customer ? customer.name : 'Bilinmeyen Müşteri',
+      customerName: customer ? customer.name : "Bilinmeyen Müşteri",
       customerId: selectedAccountId,
       total: invoiceDetails.total + invoiceDetails.tax,
       currency: invoiceDetails.currency,
@@ -787,44 +774,6 @@ const CurrentAccount = () => {
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
-      <AppBarStyled position="fixed" open={openDrawer}>
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
-            edge="start"
-            sx={{ mr: 2, ...(openDrawer && { display: "none" }) }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            Cari Hesap Yönetim Paneli
-          </Typography>
-          <Search>
-            <SearchIconWrapper>
-              <SearchIcon />
-            </SearchIconWrapper>
-            <StyledInputBase
-              placeholder="Ara…"
-              inputProps={{ "aria-label": "search" }}
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-            />
-          </Search>
-          <IconButton color="inherit">
-            <Badge badgeContent={4} color="secondary">
-              <NotificationsIcon />
-            </Badge>
-          </IconButton>
-          <FormControlLabel
-            control={
-              <Switch checked={darkMode} onChange={handleToggleDarkMode} />
-            }
-            label="Karanlık Mod"
-          />
-        </Toolbar>
-      </AppBarStyled>
       <Drawer
         sx={{
           width: drawerWidth,
@@ -838,15 +787,6 @@ const CurrentAccount = () => {
         anchor="left"
         open={openDrawer}
       >
-        <DrawerHeader>
-          <IconButton onClick={handleDrawerClose}>
-            {theme.direction === "ltr" ? (
-              <ChevronLeftIcon />
-            ) : (
-              <ChevronRightIcon />
-            )}
-          </IconButton>
-        </DrawerHeader>
         <Divider />
         <List>
           <ListItem button onClick={() => setCurrentTab(0)}>
@@ -903,7 +843,6 @@ const CurrentAccount = () => {
         </List>
       </Drawer>
       <Main open={openDrawer}>
-        <DrawerHeader />
         <Tabs
           value={currentTab}
           onChange={handleTabChange}
@@ -1092,71 +1031,85 @@ const CurrentAccount = () => {
           </Paper>
         )}
 
-{currentTab === 2 && (
-  <Paper sx={{ p: 2, mt: 2 }}>
-    <Typography variant="h6" gutterBottom>
-      Faturalar
-    </Typography>
-    <Button
-      variant="contained"
-      color="primary"
-      startIcon={<AddIcon />}
-      onClick={handleOpenInvoiceDialog}
-      sx={{ mb: 2 }}
-    >
-      Yeni Fatura Oluştur
-    </Button>
-    <TableContainer>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Fatura No</TableCell>
-            <TableCell>Tarih</TableCell>
-            <TableCell>Müşteri</TableCell>
-            <TableCell>Tutar</TableCell>
-            <TableCell>Durum</TableCell>
-            <TableCell>İşlemler</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {invoices.map((invoice) => (
-            <TableRow key={invoice.id}>
-              <TableCell>{invoice.number}</TableCell>
-              <TableCell>
-                {new Date(invoice.date).toLocaleDateString()}
-              </TableCell>
-              <TableCell>{invoice.customerName}</TableCell>
-              <TableCell>
-                {invoice.total.toFixed(2)} {invoice.currency}
-              </TableCell>
-              <TableCell>
-                <Chip
-                  label={invoice.status}
-                  color={invoice.status === "Ödendi" ? "success" : "warning"}
-                  size="small"
-                />
-              </TableCell>
-              <TableCell>
-                <IconButton onClick={() => handleDownloadInvoice(invoice)}>
-                  <PictureAsPdfIcon />
-                </IconButton>
-                <IconButton onClick={() => handleEditInvoice(invoice.id)}>
-                  <EditIcon />
-                </IconButton>
-                <IconButton onClick={() => handleDeleteInvoice(invoice.id)}>
-                  <DeleteIcon />
-                </IconButton>
-                <IconButton onClick={() => handleTogglePaymentStatus(invoice.id)}>
-                  {invoice.status === "Ödendi" ? <MoneyOffIcon /> : <AttachMoneyIcon />}
-                </IconButton>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  </Paper>
-)}
+        {currentTab === 2 && (
+          <Paper sx={{ p: 2, mt: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Faturalar
+            </Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={handleOpenInvoiceDialog}
+              sx={{ mb: 2 }}
+            >
+              Yeni Fatura Oluştur
+            </Button>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Fatura No</TableCell>
+                    <TableCell>Tarih</TableCell>
+                    <TableCell>Müşteri</TableCell>
+                    <TableCell>Tutar</TableCell>
+                    <TableCell>Durum</TableCell>
+                    <TableCell>İşlemler</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {invoices.map((invoice) => (
+                    <TableRow key={invoice.id}>
+                      <TableCell>{invoice.number}</TableCell>
+                      <TableCell>
+                        {new Date(invoice.date).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>{invoice.customerName}</TableCell>
+                      <TableCell>
+                        {invoice.total.toFixed(2)} {invoice.currency}
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={invoice.status}
+                          color={
+                            invoice.status === "Ödendi" ? "success" : "warning"
+                          }
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <IconButton
+                          onClick={() => handleDownloadInvoice(invoice)}
+                        >
+                          <PictureAsPdfIcon />
+                        </IconButton>
+                        <IconButton
+                          onClick={() => handleEditInvoice(invoice.id)}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton
+                          onClick={() => handleDeleteInvoice(invoice.id)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                        <IconButton
+                          onClick={() => handleTogglePaymentStatus(invoice.id)}
+                        >
+                          {invoice.status === "Ödendi" ? (
+                            <MoneyOffIcon />
+                          ) : (
+                            <AttachMoneyIcon />
+                          )}
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        )}
 
         {currentTab === 3 && (
           <Paper sx={{ p: 2, mt: 2 }}>
